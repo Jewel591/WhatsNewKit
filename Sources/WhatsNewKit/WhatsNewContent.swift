@@ -36,6 +36,34 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
 
     public var id: String { releaseID }
 
+    /// The host app's marketing version, falling back to its build number when needed.
+    ///
+    /// This intentionally reads `Bundle.main`, not `Bundle.module`, because the
+    /// release being presented belongs to the app embedding WhatsNewKit.
+    public static var currentAppReleaseID: String {
+        resolvedReleaseID(
+            marketingVersion: Bundle.main.object(
+                forInfoDictionaryKey: "CFBundleShortVersionString"
+            ) as? String,
+            buildVersion: Bundle.main.object(
+                forInfoDictionaryKey: "CFBundleVersion"
+            ) as? String
+        )
+    }
+
+    /// Creates content for the current host app version.
+    public init(
+        highlights: [Highlight],
+        footer: Footer? = nil
+    ) {
+        self.init(
+            releaseID: Self.currentAppReleaseID,
+            highlights: highlights,
+            footer: footer
+        )
+    }
+
+    /// Creates content with an explicit identity for tests, staged content, or custom version mapping.
     public init(
         releaseID: String,
         highlights: [Highlight],
@@ -44,5 +72,19 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
         self.releaseID = releaseID
         self.highlights = highlights
         self.footer = footer
+    }
+
+    static func resolvedReleaseID(
+        marketingVersion: String?,
+        buildVersion: String?
+    ) -> String {
+        for candidate in [marketingVersion, buildVersion] {
+            let value = candidate?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !value.isEmpty {
+                return value
+            }
+        }
+
+        return "unversioned"
     }
 }

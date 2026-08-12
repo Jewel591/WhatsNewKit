@@ -18,7 +18,6 @@ import SwiftUI
 import WhatsNewKit
 
 let content = WhatsNewContent(
-    releaseID: "2.0.0",
     highlights: [
         .init(
             symbol: "sparkles",
@@ -35,6 +34,17 @@ let content = WhatsNewContent(
 WhatsNewView(content: content) {
     dismiss()
 }
+```
+
+`WhatsNewContent` uses the host app's `CFBundleShortVersionString` as its release
+identity automatically. Pass `releaseID:` explicitly only for tests, staged
+content, or custom version mapping:
+
+```swift
+let content = WhatsNewContent(
+    releaseID: "spring-2027",
+    highlights: highlights
+)
 ```
 
 The native presentation is the default. To use the MONO presentation with the
