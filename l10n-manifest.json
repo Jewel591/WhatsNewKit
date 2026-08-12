@@ -1,0 +1,10 @@
+{
+  "catalogs": [
+    {
+      "path": "Sources/WhatsNewKit/Resources/Localizable.xcstrings",
+      "target": "WhatsNewKit",
+      "sourceRoot": "Sources/WhatsNewKit",
+      "platforms": ["iOS", "macOS", "visionOS"]
+    }
+  ]
+}

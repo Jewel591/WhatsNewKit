@@ -2,7 +2,7 @@
 
 A small SwiftUI component for presenting release highlights with an optional footer and a persistent "seen release" store.
 
-WhatsNewKit deliberately contains no user-facing copy or localization resources. The host app localizes every string in its own String Catalog before passing it to the package.
+WhatsNewKit owns and localizes its fixed "What's New" title and "Continue" action. The host app localizes release-specific highlights and footer copy in its own String Catalog before passing them to the package.
 
 ## Requirements
 
@@ -19,8 +19,6 @@ import WhatsNewKit
 
 let content = WhatsNewContent(
     releaseID: "2.0.0",
-    title: String(localized: "What's New"),
-    actionTitle: String(localized: "Continue"),
     highlights: [
         .init(
             symbol: "sparkles",
@@ -39,7 +37,7 @@ WhatsNewView(content: content) {
 }
 ```
 
-The package renders injected strings verbatim. This keeps product copy and localization ownership in the host app and prevents package bundle lookup from interfering with the app's String Catalog.
+The package renders injected release copy verbatim, while its two fixed strings are resolved from the package bundle. This keeps product-specific localization in the host app without duplicating the component's standard labels across projects.
 
 ## Presentation state
 

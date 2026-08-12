@@ -5,8 +5,6 @@ import Testing
 func contentUsesReleaseIDForIdentity() {
     let content = WhatsNewContent(
         releaseID: "2.0",
-        title: "What's New",
-        actionTitle: "Continue",
         highlights: []
     )
 

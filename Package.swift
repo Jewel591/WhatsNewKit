@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "WhatsNewKit",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),
@@ -13,7 +14,10 @@ let package = Package(
         .library(name: "WhatsNewKit", targets: ["WhatsNewKit"]),
     ],
     targets: [
-        .target(name: "WhatsNewKit"),
+        .target(
+            name: "WhatsNewKit",
+            resources: [.process("Resources")]
+        ),
         .testTarget(
             name: "WhatsNewKitTests",
             dependencies: ["WhatsNewKit"]

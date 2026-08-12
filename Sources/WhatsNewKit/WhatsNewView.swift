@@ -29,7 +29,7 @@ public struct WhatsNewView: View {
         GeometryReader { geometry in
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: Layout.pageSpacing) {
-                    Text(verbatim: content.title)
+                    Text("What's New", bundle: .module)
                         .font(style.titleFont)
                         .multilineTextAlignment(.center)
 
@@ -79,7 +79,7 @@ public struct WhatsNewView: View {
                 }
 
                 Button(action: onContinue) {
-                    Text(verbatim: content.actionTitle)
+                    Text("Continue", bundle: .module)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
