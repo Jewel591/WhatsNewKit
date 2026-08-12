@@ -19,4 +19,12 @@ public struct WhatsNewStyle: Sendable {
     }
 
     public static let standard = WhatsNewStyle()
+
+    /// The typography used by the MONO presentation when no override is supplied.
+    public static let mono = WhatsNewStyle(
+        titleFont: .title2.weight(.bold),
+        highlightTitleFont: .body.weight(.semibold),
+        highlightDetailFont: .subheadline,
+        footerFont: .footnote
+    )
 }

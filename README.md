@@ -37,6 +37,24 @@ WhatsNewView(content: content) {
 }
 ```
 
+The native presentation is the default. To use the MONO presentation with the
+same content model, pass the host app's icon and inherit or apply the desired tint:
+
+```swift
+WhatsNewView(
+    content: content,
+    variant: .mono(appIcon: Image("AppIcon"))
+) {
+    dismiss()
+}
+.tint(.accentColor)
+.presentationDetents([.height(600)])
+.presentationDragIndicator(.hidden)
+```
+
+The sheet detent remains host-owned because presentation containers differ by app
+and platform; the MONO example uses the same 600-point detent as the original design.
+
 The package renders injected release copy verbatim, while its two fixed strings are resolved from the package bundle. This keeps product-specific localization in the host app without duplicating the component's standard labels across projects.
 
 ## Presentation state

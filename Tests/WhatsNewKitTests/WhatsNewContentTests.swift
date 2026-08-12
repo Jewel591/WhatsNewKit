@@ -1,4 +1,5 @@
 import Testing
+import SwiftUI
 @testable import WhatsNewKit
 
 @Test
@@ -9,6 +10,18 @@ func contentUsesReleaseIDForIdentity() {
     )
 
     #expect(content.id == "2.0")
+}
+
+@MainActor
+@Test
+func viewSupportsNativeAndMonoVariantsWithTheSameContent() {
+    let content = WhatsNewContent(releaseID: "2.0", highlights: [])
+
+    _ = WhatsNewView(content: content) {}
+    _ = WhatsNewView(
+        content: content,
+        variant: .mono(appIcon: Image(systemName: "app.fill"))
+    ) {}
 }
 
 @Test
