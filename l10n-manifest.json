@@ -5,6 +5,12 @@
       "target": "WhatsNewKit",
       "sourceRoot": "Sources/WhatsNewKit",
       "platforms": ["iOS", "macOS", "visionOS"]
+    },
+    {
+      "path": "Sources/WhatsNewKit/Resources/Mono.xcstrings",
+      "target": "WhatsNewKit",
+      "sourceRoot": "Sources/WhatsNewKit",
+      "platforms": ["iOS", "macOS", "visionOS"]
     }
   ]
 }
