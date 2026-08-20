@@ -67,15 +67,30 @@ and platform; the MONO example uses the same 600-point detent as the original de
 
 The package renders injected release copy verbatim, while its two fixed strings are resolved from the package bundle. This keeps product-specific localization in the host app without duplicating the component's standard labels across projects.
 
-## Presentation state
+## Presentation state and release selection
 
 ```swift
-@MainActor
-func presentIfNeeded(_ content: WhatsNewContent) {
-    let store = WhatsNewPresentationStore()
-    guard store.shouldPresent(content) else { return }
-    // Present WhatsNewView.
+let controller = WhatsNewController(
+    catalog: [contentForVersion1_2, contentForVersion1_3]
+)
+
+// Safe to call while app-wide surface arbitration is collecting candidates.
+let candidate = controller.eligibleContent()
+
+// Call only for the winning surface.
+if let candidate {
+    controller.present(candidate)
 }
+
+// Call only after the user closes the actual presentation.
+controller.dismissPresentedRelease()
 ```
 
-The host app remains responsible for presentation timing and coordination with onboarding, paywalls, and other sheets.
+`WhatsNewController` selects the newest non-empty catalog entry not newer than
+the running app, compares versions numerically, preserves a monotonic seen
+watermark, and marks content seen only after a real dismissal. On a fresh install,
+call `markInstalledVersionSeen()` when onboarding completes so historical release
+notes are not presented as an upgrade.
+
+The host app remains responsible only for its localized content catalog and for
+presentation timing/coordination with onboarding, paywalls, and other sheets.
