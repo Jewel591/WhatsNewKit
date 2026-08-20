@@ -16,7 +16,14 @@ public final class WhatsNewPresentationStore {
     }
 
     public func shouldPresent(releaseID: String) -> Bool {
-        userDefaults.string(forKey: storageKey) != releaseID
+        guard let lastSeenReleaseID = userDefaults.string(forKey: storageKey) else {
+            return true
+        }
+
+        return Self.compareReleaseIDs(
+            releaseID,
+            lastSeenReleaseID
+        ) == .orderedDescending
     }
 
     public func shouldPresent(_ content: WhatsNewContent) -> Bool {
@@ -24,10 +31,22 @@ public final class WhatsNewPresentationStore {
     }
 
     public func markPresented(releaseID: String) {
-        userDefaults.set(releaseID, forKey: storageKey)
+        let watermark: String
+        if let lastSeenReleaseID = userDefaults.string(forKey: storageKey),
+           Self.compareReleaseIDs(releaseID, lastSeenReleaseID) != .orderedDescending {
+            watermark = lastSeenReleaseID
+        } else {
+            watermark = releaseID
+        }
+
+        userDefaults.set(watermark, forKey: storageKey)
     }
 
     public func markPresented(_ content: WhatsNewContent) {
         markPresented(releaseID: content.releaseID)
+    }
+
+    static func compareReleaseIDs(_ lhs: String, _ rhs: String) -> ComparisonResult {
+        lhs.compare(rhs, options: .numeric)
     }
 }
