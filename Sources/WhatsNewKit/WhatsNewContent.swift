@@ -30,7 +30,7 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
         }
     }
 
-    public let releaseID: String
+    let releaseID: String
     public let highlights: [Highlight]
     public let footer: Footer?
 
@@ -40,7 +40,7 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
     ///
     /// This intentionally reads `Bundle.main`, not `Bundle.module`, because the
     /// release being presented belongs to the app embedding WhatsNewKit.
-    public static var currentAppReleaseID: String {
+    static var currentAppReleaseID: String {
         resolvedReleaseID(
             marketingVersion: Bundle.main.object(
                 forInfoDictionaryKey: "CFBundleShortVersionString"
@@ -63,8 +63,8 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
         )
     }
 
-    /// Creates content with an explicit identity for tests, staged content, or custom version mapping.
-    public init(
+    /// Test seam for exercising release identity without changing the host bundle.
+    init(
         releaseID: String,
         highlights: [Highlight],
         footer: Footer? = nil

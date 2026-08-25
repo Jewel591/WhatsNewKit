@@ -36,16 +36,10 @@ WhatsNewView(content: content) {
 }
 ```
 
-`WhatsNewContent` uses the host app's `CFBundleShortVersionString` as its release
-identity automatically. Pass `releaseID:` explicitly only for tests, staged
-content, or custom version mapping:
-
-```swift
-let content = WhatsNewContent(
-    releaseID: "spring-2027",
-    highlights: highlights
-)
-```
+`WhatsNewContent` automatically uses the host app's
+`CFBundleShortVersionString` as its release identity. Each app binary supplies
+only its current release content; historical release catalogs are intentionally
+not part of the public API.
 
 The native presentation is the default. To use the MONO presentation with the
 same content model, pass the host app's icon and inherit or apply the desired tint:
@@ -71,7 +65,7 @@ The package renders injected release copy verbatim, while its two fixed strings 
 
 ```swift
 let controller = WhatsNewController(
-    catalog: [contentForVersion1_2, contentForVersion1_3]
+    content: currentReleaseContent
 )
 
 // Safe to call while app-wide surface arbitration is collecting candidates.
@@ -86,11 +80,22 @@ if let candidate {
 controller.dismissPresentedRelease()
 ```
 
-`WhatsNewController` selects the newest non-empty catalog entry not newer than
-the running app, compares versions numerically, preserves a monotonic seen
-watermark, and marks content seen only after a real dismissal. On a fresh install,
-call `markInstalledVersionSeen()` when onboarding completes so historical release
-notes are not presented as an upgrade.
+`WhatsNewController` presents only the running app version's current, non-empty
+content. A fresh install and an upgrade follow the same rule: eligible content is
+shown once, and is marked seen only after a real dismissal. Pass `nil` when a
+release has no highlights worth presenting; don't construct empty content and
+don't carry historical content forward.
 
-The host app remains responsible only for its localized content catalog and for
+When migrating an app that previously stored a last-seen version under its own
+UserDefaults key, let the package seed its canonical watermark without deleting
+the legacy value:
+
+```swift
+let controller = WhatsNewController(
+    content: currentReleaseContent,
+    legacyWatermarkKeys: ["legacy.whats-new.last-seen"]
+)
+```
+
+The host app remains responsible only for its localized current content and for
 presentation timing/coordination with onboarding, paywalls, and other sheets.
