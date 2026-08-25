@@ -9,7 +9,10 @@ func presentationStoreTracksThePresentedRelease() throws {
     let defaults = try #require(UserDefaults(suiteName: suiteName))
     defer { defaults.removePersistentDomain(forName: suiteName) }
 
-    let store = WhatsNewPresentationStore(userDefaults: defaults)
+    let store = WhatsNewPresentationStore(
+        userDefaults: defaults,
+        legacyWatermarkKeys: []
+    )
 
     #expect(store.shouldPresent(releaseID: "2.0"))
     store.markPresented(releaseID: "2.0")
@@ -25,7 +28,10 @@ func presentationWatermarkNeverMovesBackwards() throws {
     let defaults = try #require(UserDefaults(suiteName: suiteName))
     defer { defaults.removePersistentDomain(forName: suiteName) }
 
-    let store = WhatsNewPresentationStore(userDefaults: defaults)
+    let store = WhatsNewPresentationStore(
+        userDefaults: defaults,
+        legacyWatermarkKeys: []
+    )
     store.markPresented(releaseID: "1.10")
     store.markPresented(releaseID: "1.9")
 
@@ -36,23 +42,13 @@ func presentationWatermarkNeverMovesBackwards() throws {
 }
 
 @MainActor
-@Test
-func customStorageKeysKeepIndependentFeeds() throws {
-    let suiteName = "WhatsNewKitTests.\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suiteName))
-    defer { defaults.removePersistentDomain(forName: suiteName) }
-
-    let primary = WhatsNewPresentationStore(
-        userDefaults: defaults,
-        storageKey: "primary"
+@Test(arguments: [
+    ("1.2", "1.2.0"),
+    ("1.2.0", "1.2.0.0"),
+    ("26.18", "26.18.0"),
+])
+func equivalentReleaseIDsCompareEqual(lhs: String, rhs: String) {
+    #expect(
+        WhatsNewPresentationStore.compareReleaseIDs(lhs, rhs) == .orderedSame
     )
-    let secondary = WhatsNewPresentationStore(
-        userDefaults: defaults,
-        storageKey: "secondary"
-    )
-
-    primary.markPresented(releaseID: "2.0")
-
-    #expect(!primary.shouldPresent(releaseID: "2.0"))
-    #expect(secondary.shouldPresent(releaseID: "2.0"))
 }
