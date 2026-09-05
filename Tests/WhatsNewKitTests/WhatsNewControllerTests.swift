@@ -171,7 +171,9 @@ struct WhatsNewControllerTests {
         #expect(lastSeenVersion(in: defaults) == "1.11")
     }
 
-    // Issue #4 回归：水位只升不降，宿主误在升级路径上调用也不能把用户推过未看内容。
+    // Issue #4 回归：水位只升不降——宿主已看到更新版本时，预标记不得把它退回运行版本。
+    // 注意这条不保证「升级路径误调用是安全的」：那种情况下用户会静默错过本版内容，
+    // 由宿主的 fresh-install 条件负责，不由 Kit 兜底。
     @Test
     func markingInstalledVersionSeenNeverLowersAnExistingWatermark() throws {
         let defaults = try testDefaults()

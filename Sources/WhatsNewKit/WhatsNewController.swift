@@ -74,10 +74,9 @@ public final class WhatsNewController {
     ///
     /// A fresh install finishes onboarding having just been told what the app
     /// does; the launch-surface round that follows must not replay the same
-    /// release as "what's new". The host calls this once on that path only.
-    /// The watermark still moves forward only, so a host that calls it on an
-    /// upgrade path by mistake cannot push a user past unseen content, and any
-    /// content queued by `present(_:)` is dropped because nothing was shown.
+    /// release as "what's new". The host calls this once on that path only:
+    /// on an upgrade path it would retire highlights the user has never seen.
+    /// Anything queued by `present(_:)` is dropped, because nothing was shown.
     public func markInstalledVersionSeen() {
         presentationStore.markPresented(releaseID: currentReleaseID)
         presentedContent = nil

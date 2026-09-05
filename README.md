@@ -96,9 +96,11 @@ surface:
 controller.markInstalledVersionSeen()
 ```
 
-It retires the running release, drops anything already queued by `present(_:)`,
-and — because the watermark only ever moves forward — cannot push an upgrading
-user past content they have not seen.
+It retires the running release and drops anything already queued by
+`present(_:)`. Calling it on an upgrade path silently skips that release's
+highlights for that user, which is why the fresh-install condition belongs to
+the host and must come from a real app-installation fact rather than from an
+empty onboarding watermark.
 
 When migrating an app that previously stored a last-seen version under its own
 UserDefaults key, let the package seed its canonical watermark without deleting
