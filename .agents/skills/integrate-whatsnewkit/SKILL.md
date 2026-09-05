@@ -34,9 +34,13 @@ description: 在任何 Apple App 里实现、迁移或排查「新版本功能�
    （MONO 惯例 600pt + 隐藏 drag indicator）。
 5. 用一个 composition-root `WhatsNewController(content:)` 持有固定门控：
    `eligibleContent()` 只产出候选且不记 seen，宿主仲裁胜出后才 `present(_:)`，
-   用户实际关闭后才 `dismissPresentedRelease()`。新安装与升级走同一规则：onboarding
-   结束后重新仲裁，有当前内容就展示一次；⛔ 不在 onboarding 完成时预标记已读。
-   展示属 App 发起的 surface，经宿主 SheetCoordinator / SurfaceCoordinatorKit 仲裁。
+   用户实际关闭后才 `dismissPresentedRelease()`。展示属 App 发起的 surface，
+   经宿主 SheetCoordinator / SurfaceCoordinatorKit 仲裁。
+   **fresh install 是唯一例外**：onboarding 刚把 App 讲过一遍，紧接着再弹同一版本的
+   What's New 是重复介绍。宿主在 fresh-install 的 onboarding 完成路径上、放行任何其他
+   启动弹层之前调用 `markInstalledVersionSeen()`；⛔ 升级路径绝不调用——它会把运行版本
+   直接落成已看，用户就此静默错过这一版的 What's New。`isFreshInstall` 必须来自独立的
+   App 安装事实，不得用 onboarding 自己的 `completedVersion == nil` 推断。
 6. 迁移存量 App 时，把真实旧水位 key 传给 `legacyWatermarkKeys:`；Kit 取 canonical 与
    legacy 中的最高版本 seed 到 canonical key，保留旧 key 不删。⛔ 宿主不要直接读写
    `WhatsNewKit.lastSeenRelease`，也不要另建 gate/store。

@@ -70,6 +70,18 @@ public final class WhatsNewController {
         present(content)
     }
 
+    /// Pre-acknowledges the running app release without ever presenting it.
+    ///
+    /// A fresh install finishes onboarding having just been told what the app
+    /// does; the launch-surface round that follows must not replay the same
+    /// release as "what's new". The host calls this once on that path only:
+    /// on an upgrade path it would retire highlights the user has never seen.
+    /// Anything queued by `present(_:)` is dropped, because nothing was shown.
+    public func markInstalledVersionSeen() {
+        presentationStore.markPresented(releaseID: currentReleaseID)
+        presentedContent = nil
+    }
+
     /// Acknowledges only content that was actually presented.
     public func dismissPresentedRelease() {
         guard let content = presentedContent else { return }

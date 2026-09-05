@@ -154,6 +154,59 @@ struct WhatsNewControllerTests {
         #expect(lastSeenVersion(in: defaults) == "1.12")
     }
 
+    // Issue #4 回归：fresh install 走完 Onboarding 后预标记运行版本为已看，
+    // 否则引导刚讲完三大卖点，下一轮启动弹层就把同一版本的 What's New 再弹一次。
+    @Test
+    func markingInstalledVersionSeenRetiresTheRunningReleaseWithoutPresenting() throws {
+        let defaults = try testDefaults()
+        let controller = WhatsNewController(
+            currentReleaseID: "1.11",
+            content: content("1.11"),
+            userDefaults: defaults
+        )
+
+        controller.markInstalledVersionSeen()
+
+        #expect(controller.eligibleContent() == nil)
+        #expect(lastSeenVersion(in: defaults) == "1.11")
+    }
+
+    // Issue #4 回归：水位只升不降——宿主已看到更新版本时，预标记不得把它退回运行版本。
+    // 注意这条不保证「升级路径误调用是安全的」：那种情况下用户会静默错过本版内容，
+    // 由宿主的 fresh-install 条件负责，不由 Kit 兜底。
+    @Test
+    func markingInstalledVersionSeenNeverLowersAnExistingWatermark() throws {
+        let defaults = try testDefaults()
+        defaults.set("1.12", forKey: WhatsNewPresentationStore.defaultStorageKey)
+        let controller = WhatsNewController(
+            currentReleaseID: "1.11",
+            content: content("1.11"),
+            userDefaults: defaults
+        )
+
+        controller.markInstalledVersionSeen()
+
+        #expect(lastSeenVersion(in: defaults) == "1.12")
+    }
+
+    // Issue #4 回归：预标记同时取消已排队但尚未真正展示的内容，
+    // 否则宿主会在引导落幕后拿着 presentedContent 继续把它渲染出来。
+    @Test
+    func markingInstalledVersionSeenCancelsQueuedContent() throws {
+        let defaults = try testDefaults()
+        let queued = content("1.11")
+        let controller = WhatsNewController(
+            currentReleaseID: "1.11",
+            content: queued,
+            userDefaults: defaults
+        )
+        controller.present(queued)
+
+        controller.markInstalledVersionSeen()
+
+        #expect(controller.presentedContent == nil)
+    }
+
     private func content(_ releaseID: String) -> WhatsNewContent {
         WhatsNewContent(
             releaseID: releaseID,

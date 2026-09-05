@@ -81,10 +81,26 @@ controller.dismissPresentedRelease()
 ```
 
 `WhatsNewController` presents only the running app version's current, non-empty
-content. A fresh install and an upgrade follow the same rule: eligible content is
-shown once, and is marked seen only after a real dismissal. Pass `nil` when a
-release has no highlights worth presenting; don't construct empty content and
-don't carry historical content forward.
+content. Content is shown once and is marked seen only after a real dismissal.
+Pass `nil` when a release has no highlights worth presenting; don't construct
+empty content and don't carry historical content forward.
+
+A fresh install is the one explicit exception. Onboarding has already told the
+user what the app does, so replaying the same release as "what's new" straight
+after it is a duplicate. The host calls `markInstalledVersionSeen()` on the
+fresh-install onboarding completion path, before it releases any other launch
+surface:
+
+```swift
+// Fresh install only. Never call this on an upgrade path.
+controller.markInstalledVersionSeen()
+```
+
+It retires the running release and drops anything already queued by
+`present(_:)`. Calling it on an upgrade path silently skips that release's
+highlights for that user, which is why the fresh-install condition belongs to
+the host and must come from a real app-installation fact rather than from an
+empty onboarding watermark.
 
 When migrating an app that previously stored a last-seen version under its own
 UserDefaults key, let the package seed its canonical watermark without deleting
