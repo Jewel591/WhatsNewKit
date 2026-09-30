@@ -18,6 +18,7 @@ import SwiftUI
 import WhatsNewKit
 
 let content = WhatsNewContent(
+    release: "2.4.0",
     highlights: [
         .init(
             symbol: "sparkles",
@@ -36,10 +37,16 @@ WhatsNewView(content: content) {
 }
 ```
 
-`WhatsNewContent` automatically uses the host app's
-`CFBundleShortVersionString` as its release identity. Each app binary supplies
-only its current release content; historical release catalogs are intentionally
-not part of the public API.
+`release` is the marketing version this content was written for. Each app
+binary supplies only its current content; historical release catalogs are
+intentionally not part of the public API. When the content changes, change
+`release` with it. When a later release has nothing new to present, ship the
+content unchanged: users who already saw it are not shown it again, and users
+upgrading from an earlier release still see it.
+
+`init(highlights:footer:)` is deprecated and will be removed in 1.0.0. It claims
+the running app version as the content's release, so content left unchanged
+across an update is presented again to users who already saw it.
 
 The native presentation is the default. To use the MONO presentation with the
 same content model, pass the host app's icon and inherit or apply the desired tint:
@@ -80,10 +87,11 @@ if let candidate {
 controller.dismissPresentedRelease()
 ```
 
-`WhatsNewController` presents only the running app version's current, non-empty
-content. Content is shown once and is marked seen only after a real dismissal.
-Pass `nil` when a release has no highlights worth presenting; don't construct
-empty content and don't carry historical content forward.
+`WhatsNewController` presents non-empty content written for the running release
+or an earlier one, once per content release, and marks it seen only after a real
+dismissal. Content that claims a later release than the running app is never
+presented. Pass `nil` when there are no highlights worth presenting; don't
+construct empty content.
 
 A fresh install is the one explicit exception. Onboarding has already told the
 user what the app does, so replaying the same release as "what's new" straight

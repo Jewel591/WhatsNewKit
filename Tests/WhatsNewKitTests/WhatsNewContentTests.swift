@@ -12,6 +12,15 @@ func contentUsesReleaseIDForIdentity() {
     #expect(content.id == "2.0")
 }
 
+// Issue #6 回归：内容身份来自宿主声明的版本，而不是正在运行的 App 版本。
+@Test
+func contentUsesTheDeclaredRelease() {
+    let content = WhatsNewContent(release: "26.35.0", highlights: [])
+
+    #expect(content.releaseID == "26.35.0")
+}
+
+@available(*, deprecated)
 @Test
 func contentDefaultsToTheHostAppRelease() {
     let content = WhatsNewContent(highlights: [])
