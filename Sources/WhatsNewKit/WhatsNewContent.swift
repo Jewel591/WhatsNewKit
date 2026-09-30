@@ -63,11 +63,9 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
         highlights: [Highlight],
         footer: Footer? = nil
     ) {
-        self.init(
-            releaseID: release,
-            highlights: highlights,
-            footer: footer
-        )
+        self.releaseID = release
+        self.highlights = highlights
+        self.footer = footer
     }
 
     /// Creates content that claims the running app version as its release.
@@ -84,21 +82,10 @@ public struct WhatsNewContent: Identifiable, Hashable, Sendable {
         footer: Footer? = nil
     ) {
         self.init(
-            releaseID: Self.currentAppReleaseID,
+            release: Self.currentAppReleaseID,
             highlights: highlights,
             footer: footer
         )
-    }
-
-    /// Test seam for exercising release identity without changing the host bundle.
-    init(
-        releaseID: String,
-        highlights: [Highlight],
-        footer: Footer? = nil
-    ) {
-        self.releaseID = releaseID
-        self.highlights = highlights
-        self.footer = footer
     }
 
     static func resolvedReleaseID(

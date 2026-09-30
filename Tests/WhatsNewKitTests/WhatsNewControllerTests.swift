@@ -48,7 +48,7 @@ struct WhatsNewControllerTests {
         )
         let emptyController = WhatsNewController(
             currentReleaseID: "1.11",
-            content: WhatsNewContent(releaseID: "1.11", highlights: []),
+            content: WhatsNewContent(release: "1.11", highlights: []),
             userDefaults: defaults
         )
 
@@ -266,7 +266,7 @@ struct WhatsNewControllerTests {
 
     private func content(_ releaseID: String) -> WhatsNewContent {
         WhatsNewContent(
-            releaseID: releaseID,
+            release: releaseID,
             highlights: [
                 .init(
                     id: "feature",
