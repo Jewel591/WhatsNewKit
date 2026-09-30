@@ -27,9 +27,12 @@ description: 在任何 Apple App 里实现、迁移或排查「新版本功能�
    - application target 生产源码 `import WhatsNewKit`
    - **模块限定**构造 `WhatsNewKit.WhatsNewContent(...)` 与 `WhatsNewKit.WhatsNewView(...)`
      （只加依赖、只写 import、同名本地 View 都不算证据；测试 / Preview / DEBUG 不算）
-3. 每个 App 二进制只提供**当前版本的一份** `WhatsNewContent?`；有值得介绍的内容就构造
-   `WhatsNewContent(highlights:)`，没有就传 `nil`。release 身份固定读取宿主
-   `CFBundleShortVersionString`；⛔ 不维护历史 catalog、不补播旧版本、不构造空 highlights。
+3. 每个 App 二进制只提供**一份** `WhatsNewContent?`，用
+   `WhatsNewContent(release:highlights:)` 声明这份内容是为哪个版本写的（该版本的
+   marketing version，如 `"26.35.0"`）。换内容时同批改 `release:`；后续版本没有新内容时
+   原样保留——已看过的用户不会再看到，没看过的升级用户仍会看到。没有值得介绍的内容就传
+   `nil`。⛔ 不维护历史 catalog、不构造空 highlights；⛔ 不用已弃用的 `init(highlights:)`：
+   它把运行版本冒充为内容版本，内容没换也会在新版本重弹（1.0.0 删除）。
 4. UI 变体：默认 `.native`；MONO 用 `.mono(appIcon:)`。sheet detent 由宿主持有
    （MONO 惯例 600pt + 隐藏 drag indicator）。
 5. 用一个 composition-root `WhatsNewController(content:)` 持有固定门控：
@@ -50,6 +53,6 @@ description: 在任何 Apple App 里实现、迁移或排查「新版本功能�
 ## 宿主测试边界
 
 - 宿主只测试自己的当前内容、项目特有的 surface 优先级/路由，以及真实历史 key 到 Kit 的一次性迁移。
-- 当前版本匹配、空内容跳过、新安装展示、单调 seen watermark 与 dismiss 后标记属于 WhatsNewKit；不要在每个 App 重写一套 gate 测试。
+- 内容版本不晚于运行版本、空内容跳过、新安装展示、单调 seen watermark 与 dismiss 后标记属于 WhatsNewKit；不要在每个 App 重写一套 gate 测试。
 - 不在 XCTest 中扫描 `project.pbxproj`、import、构造器字符串或旧 View 文件；装配和残留实现由 `whats-new-check-lint` 负责。
 - 测迁移时使用隔离的 `UserDefaults(suiteName:)` 与真实已发布 key；不要访问 `.standard`。两个 App 若需要相同的 gate helper，直接补进 Kit，而不是复制测试模板。

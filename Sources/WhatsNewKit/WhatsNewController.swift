@@ -40,8 +40,12 @@ public final class WhatsNewController {
         )
     }
 
-    /// Returns the current release's non-empty content when it has not already
-    /// been acknowledged.
+    /// Returns non-empty content written for the running release or an earlier
+    /// one, when the user has not already acknowledged that release.
+    ///
+    /// Content carried unchanged into a later release keeps its own release, so
+    /// it is not presented again to users who already saw it. Content claiming
+    /// a later release than the running app is never presented.
     ///
     /// This method never mutates the seen watermark, so a surface coordinator
     /// can evaluate the candidate without consuming it.
@@ -51,7 +55,7 @@ public final class WhatsNewController {
               WhatsNewPresentationStore.compareReleaseIDs(
                 content.releaseID,
                 currentReleaseID
-              ) == .orderedSame,
+              ) != .orderedDescending,
               presentationStore.shouldPresent(content) else {
             return nil
         }

@@ -4,6 +4,7 @@ import Testing
 
 @MainActor
 struct WhatsNewControllerTests {
+    @available(*, deprecated)
     @Test
     func productionInitializerUsesTheHostReleaseIdentity() throws {
         let defaults = try testDefaults()
@@ -47,7 +48,7 @@ struct WhatsNewControllerTests {
         )
         let emptyController = WhatsNewController(
             currentReleaseID: "1.11",
-            content: WhatsNewContent(releaseID: "1.11", highlights: []),
+            content: WhatsNewContent(release: "1.11", highlights: []),
             userDefaults: defaults
         )
 
@@ -55,14 +56,70 @@ struct WhatsNewControllerTests {
         #expect(emptyController.eligibleContent() == nil)
     }
 
+    // Issue #6 回归：宿主发新版本时没换弹窗内容，已看过的用户升级后不得再看到同一份内容。
+    // 旧行为把内容身份绑在 App 版本上，内容没换也会被当成新版本内容再弹一次。
     @Test
-    func contentForAnotherReleaseIsNotEligible() throws {
+    func unchangedContentIsNotPresentedAgainAfterAnUpgrade() throws {
         let defaults = try testDefaults()
-        let controller = WhatsNewController(
-            currentReleaseID: "1.11",
-            content: content("1.10"),
+        let seenOnRelease = WhatsNewController(
+            currentReleaseID: "26.35.0",
+            content: content("26.35.0"),
             userDefaults: defaults
         )
+        seenOnRelease.presentWhatsNewIfNeeded()
+        seenOnRelease.dismissPresentedRelease()
+
+        let upgraded = WhatsNewController(
+            currentReleaseID: "26.36.0",
+            content: content("26.35.0"),
+            userDefaults: defaults
+        )
+
+        #expect(upgraded.eligibleContent() == nil)
+    }
+
+    // Issue #6 回归：修复小版本沿用上一版内容时，还没看过的用户照样能看到。
+    @Test
+    func earlierReleaseContentIsPresentedToUsersWhoHaveNotSeenIt() throws {
+        let defaults = try testDefaults()
+        defaults.set("26.34.0", forKey: WhatsNewPresentationStore.defaultStorageKey)
+        let controller = WhatsNewController(
+            currentReleaseID: "26.35.1",
+            content: content("26.35.0"),
+            userDefaults: defaults
+        )
+
+        let candidate = try #require(controller.eligibleContent())
+        controller.present(candidate)
+        controller.dismissPresentedRelease()
+
+        #expect(lastSeenVersion(in: defaults) == "26.35.0")
+    }
+
+    // Issue #6：内容声明的版本晚于正在运行的 App（写错版本号），不展示。
+    @Test
+    func contentForALaterReleaseIsNotEligible() throws {
+        let defaults = try testDefaults()
+        let controller = WhatsNewController(
+            currentReleaseID: "26.35.0",
+            content: content("26.36.0"),
+            userDefaults: defaults
+        )
+
+        #expect(controller.eligibleContent() == nil)
+    }
+
+    // Issue #6：fresh install 预标记运行版本后，沿用的上一版内容同样不弹。
+    @Test
+    func markingInstalledVersionSeenAlsoRetiresEarlierReleaseContent() throws {
+        let defaults = try testDefaults()
+        let controller = WhatsNewController(
+            currentReleaseID: "26.35.1",
+            content: content("26.35.0"),
+            userDefaults: defaults
+        )
+
+        controller.markInstalledVersionSeen()
 
         #expect(controller.eligibleContent() == nil)
     }
@@ -209,7 +266,7 @@ struct WhatsNewControllerTests {
 
     private func content(_ releaseID: String) -> WhatsNewContent {
         WhatsNewContent(
-            releaseID: releaseID,
+            release: releaseID,
             highlights: [
                 .init(
                     id: "feature",

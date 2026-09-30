@@ -2,16 +2,16 @@ import Testing
 import SwiftUI
 @testable import WhatsNewKit
 
+// Issue #6 回归：内容身份来自宿主声明的版本，而不是正在运行的 App 版本。
 @Test
-func contentUsesReleaseIDForIdentity() {
-    let content = WhatsNewContent(
-        releaseID: "2.0",
-        highlights: []
-    )
+func contentUsesTheDeclaredRelease() {
+    let content = WhatsNewContent(release: "26.35.0", highlights: [])
 
-    #expect(content.id == "2.0")
+    #expect(content.releaseID == "26.35.0")
+    #expect(content.id == "26.35.0")
 }
 
+@available(*, deprecated)
 @Test
 func contentDefaultsToTheHostAppRelease() {
     let content = WhatsNewContent(highlights: [])
@@ -41,7 +41,7 @@ func releaseIdentityFallbacks(
 @MainActor
 @Test
 func viewSupportsNativeAndMonoVariantsWithTheSameContent() {
-    let content = WhatsNewContent(releaseID: "2.0", highlights: [])
+    let content = WhatsNewContent(release: "2.0", highlights: [])
 
     _ = WhatsNewView(content: content) {}
     _ = WhatsNewView(
